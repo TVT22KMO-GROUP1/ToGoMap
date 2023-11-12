@@ -27,12 +27,15 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import com.google.android.gms.maps.model.Marker
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var currentLocationMarker: Marker? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +84,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         // Lisää Button kartan yläpuolelle
         val zoomToLocationButton = Button(this)
         zoomToLocationButton.layoutParams = buttonLayoutParams
-        zoomToLocationButton.text = "Zoom to Location"
+        zoomToLocationButton.text = "Find my location"
         zoomToLocationButton.setOnClickListener {
             zoomToCurrentLocation()
         }
@@ -133,7 +136,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Lisää oletussijaintiin merkki
         val location = LatLng(0.0, 0.0)
-        googleMap.addMarker(MarkerOptions().position(location).title("Marker in Default Location"))
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
     }
 
@@ -160,9 +162,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                         if (location != null) {
                             Log.d("Location", "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
                             val currentLatLng = LatLng(location.latitude, location.longitude)
+                            currentLocationMarker?.remove()
                             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
                             // Voit lopettaa sijaintipäivitykset, jos haluat
                             fusedLocationClient.removeLocationUpdates(this)
+                            val title = "You're here (${location.latitude}, ${location.longitude})"
+                            googleMap.addMarker(MarkerOptions().position(currentLatLng).title(title))
                         } else {
                             Log.e("Location", "Current location is null")
                         }
